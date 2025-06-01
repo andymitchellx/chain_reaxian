@@ -25,6 +25,6 @@ fn setup_resolution(mut commands : Commands,window_query : Query<&Window>)
 
     commands.insert_resource(Resolution{
         screen_dimensions : Vec2::new(win.resolution.width(),win.resolution.height()),
-        pixel_ratio : 2.0,
+        pixel_ratio : 0.7,
     });
 }

@@ -33,6 +33,7 @@ fn setup_player(
         Player{shoot_timer : 0.}
     ));
 }
+
 const SPEED : f32 = 200.;
 const BULLET_SPEED : f32 = 400.;
 const SHOOT_COOLDOWN : f32 = 0.5;
@@ -76,7 +77,7 @@ fn update_player(
     if keys.pressed(KeyCode::Space) && player.shoot_timer <= 0.
     {
         player.shoot_timer = SHOOT_COOLDOWN;
-        let bullet_texture = asset_server.load("bullet.png");
+        let bullet_texture = asset_server.load("images/chain.png");
         commands.spawn((
             Sprite{
                 image : bullet_texture,

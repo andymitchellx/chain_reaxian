@@ -35,11 +35,12 @@ pub struct AlienManager{
 }
 
 //width and height represent the amount of aliens horizontally and vertically which we wish to spawn
-const WIDTH : i32 = 10;
-const HEIGHT : i32 = 5;
-const SPACING : f32 =24.;
-const SPEED : f32 = 100.0;
-const ALIEN_SHIFT_AMOUNT : f32 = 32.;
+const WIDTH : i32 = 8;
+const HEIGHT : i32 = 4;
+const SPACING : f32 = 45.;
+const SPEED : f32 = 60.0;
+const ALIEN_SHIFT_AMOUNT : f32 = 16.;
+
 //spawn our aliens
 fn setup_aliens(mut commands : Commands,asset_server : Res<AssetServer>,resolution : Res<resolution::Resolution>)
 {
@@ -75,7 +76,6 @@ fn setup_aliens(mut commands : Commands,asset_server : Res<AssetServer>,resoluti
     }
 
 }
-
 
 fn update_aliens(
     mut commands : Commands,
@@ -123,6 +123,7 @@ fn manage_alien_logic(
             transform.translation.y -= ALIEN_SHIFT_AMOUNT;
         }
     }
+
     if alien_manager.reset{
         alien_manager.reset = false;
         alien_manager.direction = 1.;
