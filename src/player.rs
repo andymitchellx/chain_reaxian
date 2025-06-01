@@ -23,10 +23,10 @@ fn setup_player(
     resolution : Res<resolution::Resolution>,
 )
 {
-    let player_image = asset_server.load("images/player.png");
+    let player_sheet = asset_server.load("images/player2.png");
     commands.spawn((
         Sprite{
-            image : player_image,
+            image : player_sheet,
             ..Default::default()
         },
         Transform::from_xyz(0., -(resolution.screen_dimensions.y*0.5) + (resolution.pixel_ratio*5.0), 0.).with_scale(Vec3::splat(resolution.pixel_ratio)),
