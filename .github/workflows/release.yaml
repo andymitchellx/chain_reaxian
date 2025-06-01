@@ -46,7 +46,7 @@ env:
   # The ID of the app produced by this workflow.
   # Applies to macOS releases.
   # Must contain only A-Z, a-z, 0-9, hyphen, and period: <https://developer.apple.com/documentation/bundleresources/information_property_list/cfbundleidentifier>.
-  app_id: mitchea-yahoo-com.chain-reaxian
+  app_id: mitchea-yahoo-com.chain_reaxian
 
   # The base filename of the binary in the package produced by this workflow.
   # Applies to Windows, macOS, and Linux releases.
@@ -55,7 +55,7 @@ env:
 
   # The name of the `.zip` or `.dmg` file produced by this workflow.
   # Defaults to `app_binary_name` if commented out.
-  #app_package_name: chain-reaxian
+  #app_package_name: chain_reaxian
 
   # The display name of the app produced by this workflow.
   # Applies to macOS releases.
@@ -118,22 +118,22 @@ jobs:
             package_ext: .zip
             runner: ubuntu-latest
 
-          - platform: linux
-            targets: x86_64-unknown-linux-gnu
-            package_ext: .zip
-            runner: ubuntu-latest
+          # - platform: linux
+          #   targets: x86_64-unknown-linux-gnu
+          #   package_ext: .zip
+          #   runner: ubuntu-latest
 
-          - platform: windows
-            targets: x86_64-pc-windows-msvc
-            binary_ext: .exe
-            package_ext: .zip
-            runner: windows-latest
+          # - platform: windows
+          #   targets: x86_64-pc-windows-msvc
+          #   binary_ext: .exe
+          #   package_ext: .zip
+          #   runner: windows-latest
 
-          - platform: macos
-            targets: x86_64-apple-darwin aarch64-apple-darwin
-            app_suffix: .app/Contents/MacOS
-            package_ext: .dmg
-            runner: macos-latest
+          # - platform: macos
+          #   targets: x86_64-apple-darwin aarch64-apple-darwin
+          #   app_suffix: .app/Contents/MacOS
+          #   package_ext: .dmg
+          #   runner: macos-latest
     runs-on: ${{ matrix.runner }}
     permissions:
       # Required to create a GitHub release: <https://docs.github.com/en/rest/releases/releases#create-a-release>.
