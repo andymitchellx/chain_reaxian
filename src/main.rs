@@ -6,6 +6,8 @@ pub mod game;
 pub mod player;
 pub mod projectile;
 pub mod resolution;
+pub mod star_field;
+
 fn main() {
     App::new()
         .add_plugins((

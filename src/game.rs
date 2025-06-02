@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use crate::alien;
+use crate::star_field;
 use crate::player;
 use crate::projectile;
 use crate::resolution;
@@ -13,6 +14,7 @@ impl Plugin for GamePlugin {
             resolution::ResolutionPlugin,
             player::PlayerPlugin,
             projectile::ProjectilePlugin,
+            star_field::StarFieldPlugin,
         ))
         .add_systems(Startup, setup_scene);
     }
