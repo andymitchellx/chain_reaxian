@@ -38,6 +38,7 @@ const HEIGHT: i32 = 4;
 const SPACING: f32 = 45.;
 const SPEED: f32 = 60.0;
 const ALIEN_SHIFT_AMOUNT: f32 = 16.;
+const ZINDEX: f32 = 10.0;
 
 //spawn our aliens
 fn setup_aliens(
@@ -55,7 +56,7 @@ fn setup_aliens(
     let alien_texture = asset_server.load("images/alien_01.png");
     for x in 0..WIDTH {
         for y in 0..HEIGHT {
-            let position = Vec3::new(x as f32 * SPACING,y as f32 * SPACING, 0.)
+            let position = Vec3::new(x as f32 * SPACING,y as f32 * SPACING, ZINDEX)
                 - (Vec3::X * WIDTH as f32 *SPACING * 0.5) //Center the aliens on the x axis
                 - (Vec3::Y * HEIGHT as f32 * SPACING * 1.0) //Displace the aliens below the x axis so that we can displace them to the top of the screen in the next line
                 + (Vec3::Y * resolution.screen_dimensions.y * 0.5); //Displace the aliens to the top of the screen

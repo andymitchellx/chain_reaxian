@@ -4,6 +4,8 @@ use crate::alien;
 use crate::player;
 use crate::projectile;
 use crate::resolution;
+use crate::star_field;
+
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
@@ -13,6 +15,7 @@ impl Plugin for GamePlugin {
             resolution::ResolutionPlugin,
             player::PlayerPlugin,
             projectile::ProjectilePlugin,
+            star_field::StarFieldPlugin,
         ))
         .add_systems(Startup, setup_scene);
     }
