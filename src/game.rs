@@ -1,10 +1,11 @@
 use bevy::prelude::*;
 
 use crate::alien;
-use crate::star_field;
 use crate::player;
 use crate::projectile;
 use crate::resolution;
+use crate::star_field;
+
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
