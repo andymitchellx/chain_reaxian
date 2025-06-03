@@ -15,7 +15,7 @@ fn main() {
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        title: String::from("Space Invaders"),
+                        title: String::from("Chain Reaxian"),
                         position: WindowPosition::Centered(MonitorSelection::Primary),
                         resolution: Vec2::new(512., 512.).into(),
                         ..Default::default()
