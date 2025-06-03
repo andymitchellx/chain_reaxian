@@ -6,7 +6,7 @@ pub struct AlienPlugin;
 
 impl Plugin for AlienPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_aliens)
+        app.add_systems(Startup, (setup_aliens, setup_wave))
             .add_systems(Update, (update_aliens, manage_alien_logic));
     }
 }
@@ -42,25 +42,27 @@ const ALIEN_SHIFT_AMOUNT: f32 = 16.;
 const ZINDEX: f32 = 10.0;
 
 //spawn our aliens
-fn setup_aliens(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    resolution: Res<resolution::Resolution>,
-) {
+fn setup_aliens(mut commands: Commands) {
     commands.insert_resource(AlienManager {
         reset: false,
         dist_from_boundary: 0.,
         shift_aliens_down: false,
         direction: 1.,
     });
-    //load the alien texture, root directory by default is assets
+}
+
+fn setup_wave(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    resolution: Res<resolution::Resolution>,
+) {
     let alien_texture = asset_server.load("images/alien_01.png");
     for x in 0..WIDTH {
         for y in 0..HEIGHT {
-            let position = Vec3::new(x as f32 * SPACING,y as f32 * SPACING, ZINDEX)
-                - (Vec3::X * WIDTH as f32 *SPACING * 0.5) //Center the aliens on the x axis
-                - (Vec3::Y * HEIGHT as f32 * SPACING * 1.0) //Displace the aliens below the x axis so that we can displace them to the top of the screen in the next line
-                + (Vec3::Y * resolution.screen_dimensions.y * 0.5); //Displace the aliens to the top of the screen
+            let position = Vec3::new(x as f32 * SPACING, y as f32 * SPACING, ZINDEX)
+                - (Vec3::X * WIDTH as f32 * SPACING * 0.5)
+                - (Vec3::Y * HEIGHT as f32 * SPACING * 1.0)
+                + (Vec3::Y * resolution.screen_dimensions.y * 0.5);
             commands.spawn((
                 Sprite {
                     //splat just creates a vector with 3 of the same value
@@ -87,6 +89,7 @@ fn update_aliens(
     time: Res<Time>,
 ) {
     let margin = resolution.screen_dimensions.x * 0.5 - (resolution.pixel_ratio * 65.0);
+    let mut alien_alive = false;
     for (entity, alien, mut transform, mut visibility) in alien_query.iter_mut() {
         //delta_seconds makes it so our aliens move at the same speed regardless of framerate; delta_seconds() gives the time between each frame.
         transform.translation.x += time.delta_secs() * alien_manager.direction * SPEED;
@@ -107,6 +110,12 @@ fn update_aliens(
         if transform.translation.y < -resolution.screen_dimensions.y * 0.5 {
             alien_manager.reset = true;
         }
+
+        alien_alive = true;
+    }
+
+    if !alien_alive {
+        alien_manager.reset = true;
     }
 }
 
