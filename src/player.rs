@@ -16,6 +16,13 @@ impl Plugin for PlayerPlugin {
 pub struct Player {
     //provides cooldown for shooting so we don't just shoot a bullet every frame
     pub shoot_timer: f32,
+    pub projectile_type: ProjectileType,
+}
+
+pub enum ProjectileType {
+    SingleShot,
+    DoubleShot,
+    TripleShot,
 }
 
 fn setup_player(
@@ -35,7 +42,10 @@ fn setup_player(
             0.,
         )
         .with_scale(Vec3::splat(resolution.pixel_ratio)),
-        Player { shoot_timer: 0. },
+        Player {
+            shoot_timer: 0.,
+            projectile_type: ProjectileType::SingleShot,
+        },
     ));
 }
 
@@ -81,17 +91,83 @@ fn update_player(
 
     if keys.pressed(KeyCode::Space) && player.shoot_timer <= 0. {
         player.shoot_timer = SHOOT_COOLDOWN;
-        let bullet_texture = asset_server.load("images/chain.png");
-        commands.spawn((
-            Sprite {
-                image: bullet_texture,
-                ..Default::default()
-            },
-            Transform::from_translation(transform.translation)
-                .with_scale(Vec3::splat(resolution.pixel_ratio)),
-            projectile::Projectile {
-                speed: BULLET_SPEED,
-            },
-        ));
+        match player.projectile_type {
+            ProjectileType::DoubleShot => {
+                spawn_two_missiles(commands, asset_server, resolution, transform)
+            }
+            ProjectileType::TripleShot => {
+                spawn_one_missile(&mut commands, &asset_server, &resolution, &transform);
+                spawn_two_missiles(commands, asset_server, resolution, transform);
+            }
+            _ => spawn_one_missile(&mut commands, &asset_server, &resolution, &transform),
+        }
     }
+}
+
+const PRIMARY_GUN_HEIGHT: f32 = 25.0;
+
+fn spawn_one_missile(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    resolution: &Res<resolution::Resolution>,
+    transform: &Mut<'_, Transform>,
+) {
+    let bullet_texture: Handle<Image> = asset_server.load("images/chain.png");
+    commands.spawn((
+        Sprite {
+            image: bullet_texture,
+            ..Default::default()
+        },
+        Transform::from_xyz(
+            transform.translation.x,
+            transform.translation.y + PRIMARY_GUN_HEIGHT,
+            transform.translation.z,
+        )
+        .with_scale(Vec3::splat(resolution.pixel_ratio)),
+        projectile::Projectile {
+            speed: BULLET_SPEED,
+        },
+    ));
+}
+
+const GUN_WIDTH: f32 = 20.0;
+
+fn spawn_two_missiles(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    resolution: Res<resolution::Resolution>,
+    transform: Mut<'_, Transform>,
+) {
+    let bullet_texture: Handle<Image> = asset_server.load("images/chain.png");
+    commands.spawn((
+        Sprite {
+            image: bullet_texture.clone(),
+            ..Default::default()
+        },
+        Transform::from_xyz(
+            transform.translation.x - GUN_WIDTH,
+            transform.translation.y,
+            transform.translation.z,
+        )
+        .with_scale(Vec3::splat(resolution.pixel_ratio)),
+        projectile::Projectile {
+            speed: BULLET_SPEED,
+        },
+    ));
+
+    commands.spawn((
+        Sprite {
+            image: bullet_texture,
+            ..Default::default()
+        },
+        Transform::from_xyz(
+            transform.translation.x + GUN_WIDTH,
+            transform.translation.y,
+            transform.translation.z,
+        )
+        .with_scale(Vec3::splat(resolution.pixel_ratio)),
+        projectile::Projectile {
+            speed: BULLET_SPEED,
+        },
+    ));
 }
