@@ -7,6 +7,9 @@ use crate::resolution;
 
 pub struct CapsulePlugin;
 
+const CAPSULE_PCT: f32 = 1.2;
+const CAPSULE_RADIUS: f32 = 24.;
+
 impl Plugin for CapsulePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
@@ -30,7 +33,7 @@ fn spawn_capsules(
     let mut rng = rand::thread_rng();
     for event in alien_killed_events.read() {
         let pct = rng.gen_range(0.0..100.0);
-        if pct < 50.0 {
+        if pct < CAPSULE_PCT {
             let capsule_image = asset_server.load("images/orange_capsule.png");
             commands.spawn((
                 Sprite {
@@ -59,7 +62,6 @@ fn update_capsules(
         }
     }
 }
-const CAPSULE_RADIUS: f32 = 24.;
 
 fn update_capsule_interactions(
     mut player_query: Query<(&mut player::Player, &Transform)>,
