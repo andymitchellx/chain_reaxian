@@ -20,6 +20,7 @@ pub struct Alien {
 //a marker component to prevent querying any dead aliens in our updates after they have already died
 #[derive(Component)]
 pub struct Dead;
+
 //controls the behavior of our aliens
 #[derive(Resource)]
 pub struct AlienManager {
@@ -36,7 +37,7 @@ pub struct AlienManager {
 const WIDTH: i32 = 8;
 const HEIGHT: i32 = 4;
 const SPACING: f32 = 45.;
-const SPEED: f32 = 60.0;
+const SPEED: f32 = 50.0;
 const ALIEN_SHIFT_AMOUNT: f32 = 16.;
 const ZINDEX: f32 = 10.0;
 
@@ -85,21 +86,23 @@ fn update_aliens(
     resolution: Res<resolution::Resolution>,
     time: Res<Time>,
 ) {
+    let margin = resolution.screen_dimensions.x * 0.5 - (resolution.pixel_ratio * 65.0);
     for (entity, alien, mut transform, mut visibility) in alien_query.iter_mut() {
         //delta_seconds makes it so our aliens move at the same speed regardless of framerate; delta_seconds() gives the time between each frame.
         transform.translation.x += time.delta_secs() * alien_manager.direction * SPEED;
-        if transform.translation.x.abs() > resolution.screen_dimensions.x * 0.5 {
+        if transform.translation.x.abs() > margin {
             alien_manager.shift_aliens_down = true;
             alien_manager.dist_from_boundary =
-                resolution.screen_dimensions.x * alien_manager.direction * 0.5
-                    - transform.translation.x; //calculates the delta x we need to move the alien to get it back into our bounds
+                margin * alien_manager.direction - transform.translation.x;
         }
+
         if alien.dead {
             commands.entity(entity).insert(Dead {});
             *visibility = Visibility::Hidden;
         } else {
             *visibility = Visibility::Visible;
         }
+
         //if the aliens have made it out of the bottom of the screen we have lost the game and should reset
         if transform.translation.y < -resolution.screen_dimensions.y * 0.5 {
             alien_manager.reset = true;

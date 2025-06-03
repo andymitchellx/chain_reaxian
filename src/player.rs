@@ -2,7 +2,9 @@ use bevy::prelude::*;
 
 use crate::projectile;
 use crate::resolution;
+
 pub struct PlayerPlugin;
+
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_player)
@@ -29,7 +31,7 @@ fn setup_player(
         },
         Transform::from_xyz(
             0.,
-            -(resolution.screen_dimensions.y * 0.5) + (resolution.pixel_ratio * 5.0),
+            -(resolution.screen_dimensions.y * 0.5) + (resolution.pixel_ratio * 25.0),
             0.,
         )
         .with_scale(Vec3::splat(resolution.pixel_ratio)),
