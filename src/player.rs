@@ -13,7 +13,7 @@ impl Plugin for PlayerPlugin {
 }
 
 #[derive(Component)]
-struct Player {
+pub struct Player {
     //provides cooldown for shooting so we don't just shoot a bullet every frame
     pub shoot_timer: f32,
 }
@@ -42,6 +42,7 @@ fn setup_player(
 const SPEED: f32 = 200.;
 const BULLET_SPEED: f32 = 400.;
 const SHOOT_COOLDOWN: f32 = 0.5;
+
 fn update_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
