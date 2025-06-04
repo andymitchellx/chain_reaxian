@@ -52,7 +52,7 @@ fn setup_player(
 
 const SPEED: f32 = 200.;
 const BULLET_SPEED: f32 = 400.;
-const SHOOT_COOLDOWN: f32 = 0.5;
+const SHOOT_COOLDOWN: f32 = 0.9;
 
 fn update_player(
     mut commands: Commands,
