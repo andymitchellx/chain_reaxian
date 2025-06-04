@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+use crate::capsule::CapsuleCollisionEvent;
 use crate::projectile;
 use crate::resolution;
 
@@ -8,7 +9,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_player)
-            .add_systems(Update, update_player);
+            .add_systems(Update, (update_player, capsule_collision));
     }
 }
 
@@ -61,7 +62,6 @@ fn update_player(
     keys: Res<ButtonInput<KeyCode>>,
     resolution: Res<resolution::Resolution>,
 ) {
-    //query for the only instance of the player
     let (mut player, mut transform) = player_query.single_mut().unwrap();
 
     //the input which the player is pressing for the horizontal axis
@@ -100,6 +100,24 @@ fn update_player(
                 spawn_two_missiles(commands, asset_server, resolution, transform);
             }
             _ => spawn_one_missile(&mut commands, &asset_server, &resolution, &transform),
+        }
+    }
+}
+
+fn capsule_collision(
+    mut capsule_collision_events: EventReader<CapsuleCollisionEvent>,
+    mut player_query: Query<&mut Player>,
+) {
+    let mut player = player_query.single_mut().unwrap();
+    for _ in capsule_collision_events.read() {
+        match player.projectile_type {
+            ProjectileType::DoubleShot => {
+                player.projectile_type = ProjectileType::TripleShot;
+            }
+            ProjectileType::TripleShot => {
+                player.projectile_type = ProjectileType::SingleShot;
+            }
+            _ => player.projectile_type = ProjectileType::DoubleShot,
         }
     }
 }
