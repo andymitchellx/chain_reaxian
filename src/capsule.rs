@@ -16,6 +16,7 @@ impl Plugin for CapsulePlugin {
             Update,
             (spawn_capsules, update_capsules, update_capsule_interactions),
         );
+        app.add_event::<CapsuleCollisionEvent>();
     }
 }
 
@@ -63,10 +64,14 @@ fn update_capsules(
     }
 }
 
+#[derive(Event, Debug)]
+pub struct CapsuleCollisionEvent {}
+
 fn update_capsule_interactions(
     mut player_query: Query<(&mut player::Player, &Transform)>,
     mut capsule_query: Query<(Entity, &Transform), With<Capsule>>,
     mut commands: Commands,
+    mut events: EventWriter<CapsuleCollisionEvent>,
 ) {
     for (_, player_transform) in player_query.iter_mut() {
         for (capsule_entity, capsule_transform) in capsule_query.iter_mut() {
@@ -81,6 +86,7 @@ fn update_capsule_interactions(
             if Vec2::distance(player_pos, capsule_pos) < CAPSULE_RADIUS {
                 //best to not despawn in the query but the warning doesn't break the game so I don't mind too much
                 commands.entity(capsule_entity).despawn();
+                events.write(CapsuleCollisionEvent {});
             }
         }
     }
