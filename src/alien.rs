@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+use crate::alien_layouts::*;
 use crate::resolution;
 
 pub struct AlienPlugin;
@@ -18,9 +19,13 @@ pub struct Alien {
     pub alien_type: AlienType,
 }
 
-pub enum AlienType{Worker, Soldier, Queen}
-
-
+#[derive(PartialEq, Eq)]
+pub enum AlienType {
+    Worker,
+    Soldier,
+    Queen,
+    Empty,
+}
 
 //a marker component to prevent querying any dead aliens in our updates after they have already died
 #[derive(Component)]
@@ -39,12 +44,12 @@ pub struct AlienManager {
 }
 
 //width and height represent the amount of aliens horizontally and vertically which we wish to spawn
-const WIDTH: i32 = 8;
-const HEIGHT: i32 = 4;
-const SPACING: f32 = 45.;
-const SPEED: f32 = 50.0;
+const HORIZ_SPACING: f32 = 22.;
+const VERT_SPACING: f32 = 50.0;
+const SPEED: f32 = 35.0;
 const ALIEN_SHIFT_AMOUNT: f32 = 16.;
-const ZINDEX: f32 = 10.0;
+const ZINDEX: f32 = 15.0;
+const VERT_OFFSET: f32 = 70.0;
 
 //spawn our aliens
 fn setup_aliens(mut commands: Commands) {
@@ -56,32 +61,62 @@ fn setup_aliens(mut commands: Commands) {
     });
 }
 
+#[allow(clippy::needless_range_loop)]
 fn setup_wave(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     resolution: Res<resolution::Resolution>,
 ) {
-    let alien_texture = asset_server.load("images/alien_worker.png");
-    for x in 0..WIDTH {
-        for y in 0..HEIGHT {
-            let position = Vec3::new(x as f32 * SPACING, y as f32 * SPACING, ZINDEX)
-                - (Vec3::X * WIDTH as f32 * SPACING * 0.5)
-                - (Vec3::Y * HEIGHT as f32 * SPACING * 1.0)
-                + (Vec3::Y * resolution.screen_dimensions.y * 0.5);
-            commands.spawn((
-                Sprite {
-                    //splat just creates a vector with 3 of the same value
-                    image: alien_texture.clone(),
-                    ..default()
-                },
-                Transform::from_translation(position)
-                    .with_scale(Vec3::splat(resolution.pixel_ratio)),
-                Alien {
-                    original_position: position,
-                    dead: false,
-                    alien_type: AlienType::Worker,
-                },
-            ));
+    let worker_texture = asset_server.load("images/alien_worker.png");
+    let soldier_texture = asset_server.load("images/alien_soldier.png");
+    let queen_texture = asset_server.load("images/alien_queen.png");
+    let half_width = ALIEN_COLS as f32 * HORIZ_SPACING * 0.5;
+
+    for row in 0..ALIEN_ROWS {
+        for col in 0..ALIEN_COLS {
+            let mask_value = DEFAULT_MASK[row][col];
+            let alien_type;
+            let mut alien_image: Handle<Image> = worker_texture.clone();
+            match mask_value {
+                1 => {
+                    alien_type = AlienType::Worker;
+                    alien_image = worker_texture.clone();
+                }
+                2 => {
+                    alien_type = AlienType::Soldier;
+                    alien_image = soldier_texture.clone();
+                }
+                3 => {
+                    alien_type = AlienType::Queen;
+                    alien_image = queen_texture.clone();
+                }
+                _ => alien_type = AlienType::Empty,
+            }
+
+            if alien_type != AlienType::Empty {
+                let position = Vec3::new(
+                    col as f32 * HORIZ_SPACING - half_width,
+                    row as f32 * VERT_SPACING + VERT_OFFSET,
+                    ZINDEX,
+                );
+                // let position = Vec3::new(col as f32 * SPACING, row as f32 * SPACING, ZINDEX)
+                // - (Vec3::X * ALIEN_COLS as f32 * 0.5);
+                //  - (Vec3::Y * ALIEN_ROWS as f32 * 1.0)
+                //  + (Vec3::Y * resolution.screen_dimensions.y * 0.5);
+                commands.spawn((
+                    Sprite {
+                        image: alien_image,
+                        ..default()
+                    },
+                    Transform::from_translation(position)
+                        .with_scale(Vec3::splat(resolution.pixel_ratio)),
+                    Alien {
+                        original_position: position,
+                        dead: false,
+                        alien_type: AlienType::Worker,
+                    },
+                ));
+            }
         }
     }
 }
@@ -94,7 +129,7 @@ fn update_aliens(
     resolution: Res<resolution::Resolution>,
     time: Res<Time>,
 ) {
-    let margin = resolution.screen_dimensions.x * 0.5 - (resolution.pixel_ratio * 65.0);
+    let margin = resolution.screen_dimensions.x * 0.5 - (resolution.pixel_ratio * 25.0);
     let mut alien_alive = false;
     for (entity, alien, mut transform, mut visibility) in alien_query.iter_mut() {
         //delta_seconds makes it so our aliens move at the same speed regardless of framerate; delta_seconds() gives the time between each frame.
