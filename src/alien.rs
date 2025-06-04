@@ -15,7 +15,12 @@ impl Plugin for AlienPlugin {
 pub struct Alien {
     pub dead: bool,
     pub original_position: Vec3,
+    pub alien_type: AlienType,
 }
+
+pub enum AlienType{Worker, Soldier, Queen}
+
+
 
 //a marker component to prevent querying any dead aliens in our updates after they have already died
 #[derive(Component)]
@@ -56,7 +61,7 @@ fn setup_wave(
     asset_server: Res<AssetServer>,
     resolution: Res<resolution::Resolution>,
 ) {
-    let alien_texture = asset_server.load("images/alien_01.png");
+    let alien_texture = asset_server.load("images/alien_worker.png");
     for x in 0..WIDTH {
         for y in 0..HEIGHT {
             let position = Vec3::new(x as f32 * SPACING, y as f32 * SPACING, ZINDEX)
@@ -74,6 +79,7 @@ fn setup_wave(
                 Alien {
                     original_position: position,
                     dead: false,
+                    alien_type: AlienType::Worker,
                 },
             ));
         }
