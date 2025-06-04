@@ -34,7 +34,7 @@ fn update_projectiles(
         }
     }
 }
-const BULLET_RADIUS: f32 = 24.;
+const BULLET_RADIUS: f32 = 16.;
 //activate death for aliens and such
 fn update_alien_interactions(
     mut alien_query: Query<(&mut alien::Alien, &Transform), Without<alien::Dead>>,

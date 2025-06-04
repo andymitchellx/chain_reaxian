@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 pub mod alien;
+pub mod alien_layouts;
 pub mod capsule;
 pub mod game;
 pub mod player;

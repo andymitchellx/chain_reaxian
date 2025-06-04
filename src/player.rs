@@ -31,7 +31,7 @@ fn setup_player(
     asset_server: Res<AssetServer>,
     resolution: Res<resolution::Resolution>,
 ) {
-    let player_sheet = asset_server.load("images/player2.png");
+    let player_sheet = asset_server.load("images/player.png");
     commands.spawn((
         Sprite {
             image: player_sheet,
