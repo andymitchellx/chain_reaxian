@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use crate::alien_layouts::*;
+use crate::alien_projectile::PlayerKilledEvent;
 use crate::resolution;
 
 pub struct AlienPlugin;
@@ -8,7 +9,7 @@ pub struct AlienPlugin;
 impl Plugin for AlienPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, (setup_aliens, setup_wave))
-            .add_systems(Update, (update_aliens, manage_alien_logic));
+            .add_systems(Update, (update_aliens, manage_alien_logic, player_killed));
     }
 }
 
@@ -41,12 +42,15 @@ pub struct AlienManager {
     pub dist_from_boundary: f32,
     //the game will reset when this is triggered
     pub reset: bool,
+    pub speed: f32,
+    pub prev_alien_count: i32,
 }
 
 //width and height represent the amount of aliens horizontally and vertically which we wish to spawn
 const HORIZ_SPACING: f32 = 22.;
 const VERT_SPACING: f32 = 50.0;
 const SPEED: f32 = 35.0;
+const SPEED_INCREMENT: f32 = 12.0;
 const ALIEN_SHIFT_AMOUNT: f32 = 16.;
 const ZINDEX: f32 = 15.0;
 const VERT_OFFSET: f32 = 70.0;
@@ -58,6 +62,8 @@ fn setup_aliens(mut commands: Commands) {
         dist_from_boundary: 0.,
         shift_aliens_down: false,
         direction: 1.,
+        speed: SPEED,
+        prev_alien_count: 99,
     });
 }
 
@@ -126,14 +132,17 @@ fn update_aliens(
     //only query aliens that are still alive
     mut alien_query: Query<(Entity, &Alien, &mut Transform, &mut Visibility), Without<Dead>>,
     mut alien_manager: ResMut<AlienManager>,
+    mut events: EventWriter<PlayerKilledEvent>,
     resolution: Res<resolution::Resolution>,
     time: Res<Time>,
 ) {
     let margin = resolution.screen_dimensions.x * 0.5 - (resolution.pixel_ratio * 25.0);
     let mut alien_alive = false;
+    let mut alien_count = 0;
     for (entity, alien, mut transform, mut visibility) in alien_query.iter_mut() {
         //delta_seconds makes it so our aliens move at the same speed regardless of framerate; delta_seconds() gives the time between each frame.
-        transform.translation.x += time.delta_secs() * alien_manager.direction * SPEED;
+        transform.translation.x +=
+            time.delta_secs() * alien_manager.direction * alien_manager.speed;
         if transform.translation.x.abs() > margin {
             alien_manager.shift_aliens_down = true;
             alien_manager.dist_from_boundary =
@@ -148,16 +157,28 @@ fn update_aliens(
         }
 
         //if the aliens have made it out of the bottom of the screen we have lost the game and should reset
-        if transform.translation.y < -resolution.screen_dimensions.y * 0.5 {
+        if transform.translation.y < -resolution.screen_dimensions.y * 0.5 + 70. {
             alien_manager.reset = true;
+            events.write(PlayerKilledEvent {});
         }
 
         alien_alive = true;
+        alien_count += 1;
     }
 
     if !alien_alive {
         alien_manager.reset = true;
     }
+
+    if (alien_count < 30 && alien_manager.prev_alien_count >= 30)
+        || (alien_count < 20 && alien_manager.prev_alien_count >= 20)
+        || (alien_count < 10 && alien_manager.prev_alien_count >= 10)
+        || (alien_count < 3 && alien_manager.prev_alien_count >= 3)
+    {
+        alien_manager.speed += SPEED_INCREMENT;
+    }
+
+    alien_manager.prev_alien_count = alien_count;
 }
 
 fn manage_alien_logic(
@@ -186,5 +207,15 @@ fn manage_alien_logic(
                 commands.entity(entity).remove::<Dead>();
             }
         }
+    }
+}
+
+fn player_killed(
+    mut player_killed_events: EventReader<PlayerKilledEvent>,
+    mut alien_manager: ResMut<AlienManager>,
+) {
+    for _ in player_killed_events.read() {
+        alien_manager.reset = true;
+        alien_manager.speed = SPEED;
     }
 }

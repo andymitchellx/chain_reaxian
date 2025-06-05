@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+use crate::alien_projectile::PlayerKilledEvent;
 use crate::capsule::CapsuleCollisionEvent;
 use crate::projectile;
 use crate::resolution;
@@ -8,8 +9,10 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_player)
-            .add_systems(Update, (update_player, capsule_collision));
+        app.add_systems(Startup, setup_player).add_systems(
+            Update,
+            (update_player, capsule_collision, reset_when_killed),
+        );
     }
 }
 
@@ -117,7 +120,7 @@ fn capsule_collision(
                 player.projectile_type = ProjectileType::TripleShot;
             }
             ProjectileType::TripleShot => {
-                player.projectile_type = ProjectileType::SingleShot;
+                player.projectile_type = ProjectileType::TripleShot;
             }
             _ => player.projectile_type = ProjectileType::DoubleShot,
         }
@@ -190,4 +193,14 @@ fn spawn_two_missiles(
             speed: BULLET_SPEED,
         },
     ));
+}
+
+fn reset_when_killed(
+    mut player_killed_events: EventReader<PlayerKilledEvent>,
+    mut player_query: Query<&mut Player>,
+) {
+    let mut player = player_query.single_mut().unwrap();
+    for _ in player_killed_events.read() {
+        player.projectile_type = ProjectileType::SingleShot;
+    }
 }

@@ -7,7 +7,7 @@ use crate::resolution;
 
 pub struct CapsulePlugin;
 
-const CAPSULE_PCT: f32 = 1.2;
+const CAPSULE_PCT: f32 = 0.5;
 const CAPSULE_RADIUS: f32 = 24.;
 
 impl Plugin for CapsulePlugin {
