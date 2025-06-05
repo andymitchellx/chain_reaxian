@@ -19,7 +19,7 @@ pub struct Alien {
     pub alien_type: AlienType,
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum AlienType {
     Worker,
     Soldier,
