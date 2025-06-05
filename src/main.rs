@@ -1,5 +1,5 @@
+use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
-use bevy::{asset::AssetMetaCheck, prelude::*};
 
 pub mod alien;
 pub mod alien_layouts;
