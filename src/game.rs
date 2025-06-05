@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use crate::alien;
+use crate::alien_projectile;
 use crate::capsule;
 use crate::player;
 use crate::projectile;
@@ -13,6 +14,7 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             alien::AlienPlugin,
+            alien_projectile::AlienProjectilePlugin,
             capsule::CapsulePlugin,
             resolution::ResolutionPlugin,
             player::PlayerPlugin,

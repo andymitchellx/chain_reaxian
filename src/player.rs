@@ -18,6 +18,7 @@ pub struct Player {
     //provides cooldown for shooting so we don't just shoot a bullet every frame
     pub shoot_timer: f32,
     pub projectile_type: ProjectileType,
+    pub dead: bool,
 }
 
 pub enum ProjectileType {
@@ -46,6 +47,7 @@ fn setup_player(
         Player {
             shoot_timer: 0.,
             projectile_type: ProjectileType::SingleShot,
+            dead: false,
         },
     ));
 }
