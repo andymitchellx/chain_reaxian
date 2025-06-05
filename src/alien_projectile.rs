@@ -32,9 +32,7 @@ const SHOOT_COOLDOWN: f32 = 1.2;
 const BULLET_SPEED: f32 = 240.;
 
 #[derive(Event, Debug)]
-pub struct PlayerKilledEvent {
-    pub location: Vec2,
-}
+pub struct PlayerKilledEvent {}
 
 #[derive(Component)]
 pub struct AlienProjectile {
@@ -81,9 +79,7 @@ fn update_player_interactions(
         if Vec2::distance(player_pos, alien_projectile_pos) < BULLET_RADIUS {
             player.dead = true;
             commands.entity(alien_projectile_entity).despawn();
-            events.write(PlayerKilledEvent {
-                location: player_pos,
-            });
+            events.write(PlayerKilledEvent {});
         }
     }
 }

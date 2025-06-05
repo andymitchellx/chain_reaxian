@@ -4,6 +4,7 @@ pub mod alien;
 pub mod alien_layouts;
 pub mod alien_projectile;
 pub mod capsule;
+pub mod fire;
 pub mod game;
 pub mod player;
 pub mod projectile;

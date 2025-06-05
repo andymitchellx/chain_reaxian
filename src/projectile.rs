@@ -11,8 +11,9 @@ impl Plugin for ProjectilePlugin {
     }
 }
 
-#[derive(Event, Debug)]
+#[derive(Event)]
 pub struct AlienKilledEvent {
+    pub alien_type: alien::AlienType,
     pub location: Vec2,
 }
 
@@ -53,6 +54,7 @@ fn update_alien_interactions(
                 alien.dead = true;
                 commands.entity(projectile_entity).despawn();
                 events.write(AlienKilledEvent {
+                    alien_type: alien.alien_type,
                     location: alien_pos,
                 });
             }

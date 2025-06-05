@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::alien;
 use crate::alien_projectile;
 use crate::capsule;
+use crate::fire;
 use crate::player;
 use crate::projectile;
 use crate::resolution;
@@ -16,6 +17,7 @@ impl Plugin for GamePlugin {
             alien::AlienPlugin,
             alien_projectile::AlienProjectilePlugin,
             capsule::CapsulePlugin,
+            fire::FirePlugin,
             resolution::ResolutionPlugin,
             player::PlayerPlugin,
             projectile::ProjectilePlugin,
