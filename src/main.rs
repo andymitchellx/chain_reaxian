@@ -6,10 +6,12 @@ pub mod alien_projectile;
 pub mod capsule;
 pub mod fire;
 pub mod game;
+pub mod level_indicator;
 pub mod player;
 pub mod projectile;
 pub mod resolution;
 pub mod star_field;
+pub mod widget;
 
 fn main() {
     App::new()
