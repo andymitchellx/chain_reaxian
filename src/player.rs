@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::alien_projectile::PlayerKilledEvent;
 use crate::capsule::CapsuleCollisionEvent;
+use crate::level_indicator::LevelCompletedEvent;
 use crate::projectile;
 use crate::resolution;
 
@@ -22,6 +23,7 @@ pub struct Player {
     pub shoot_timer: f32,
     pub projectile_type: ProjectileType,
     pub dead: bool,
+    pub level: i32,
 }
 
 pub enum ProjectileType {
@@ -51,6 +53,7 @@ fn setup_player(
             shoot_timer: 0.,
             projectile_type: ProjectileType::SingleShot,
             dead: false,
+            level: 1,
         },
     ));
 }
@@ -112,15 +115,17 @@ fn update_player(
 fn capsule_collision(
     mut capsule_collision_events: EventReader<CapsuleCollisionEvent>,
     mut player_query: Query<&mut Player>,
+    mut level_completed_events: EventWriter<LevelCompletedEvent>,
 ) {
     let mut player = player_query.single_mut().unwrap();
     for _ in capsule_collision_events.read() {
         match player.projectile_type {
             ProjectileType::DoubleShot => {
                 player.projectile_type = ProjectileType::TripleShot;
+                level_completed_events.write(LevelCompletedEvent {});
             }
             ProjectileType::TripleShot => {
-                player.projectile_type = ProjectileType::TripleShot;
+                level_completed_events.write(LevelCompletedEvent {});
             }
             _ => player.projectile_type = ProjectileType::DoubleShot,
         }
@@ -198,9 +203,12 @@ fn spawn_two_missiles(
 fn reset_when_killed(
     mut player_killed_events: EventReader<PlayerKilledEvent>,
     mut player_query: Query<&mut Player>,
+    mut events: EventWriter<LevelCompletedEvent>,
 ) {
     let mut player = player_query.single_mut().unwrap();
     for _ in player_killed_events.read() {
         player.projectile_type = ProjectileType::SingleShot;
+        player.level = 0;
+        events.write(LevelCompletedEvent {});
     }
 }

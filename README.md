@@ -1,4 +1,9 @@
 # Chain Reaxian
 
-This project was generated using the [Bevy New 2D](https://github.com/TheBevyFlock/bevy_new_2d) template.
-Check out the [documentation](https://github.com/TheBevyFlock/bevy_new_2d/blob/main/README.md) to get started!
+Inspiration: https://github.com/Biped-Potato/bevy_space_invaders
+
+## Controls
+
+* A: left
+* D: right
+* space: fire

@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::alien_layouts::*;
 use crate::alien_projectile::PlayerKilledEvent;
+use crate::level_indicator::LevelCompletedEvent;
 use crate::resolution;
 
 pub struct AlienPlugin;
@@ -44,6 +45,7 @@ pub struct AlienManager {
     pub reset: bool,
     pub speed: f32,
     pub prev_alien_count: i32,
+    pub reset_cooldown: f32,
 }
 
 //width and height represent the amount of aliens horizontally and vertically which we wish to spawn
@@ -64,6 +66,7 @@ fn setup_aliens(mut commands: Commands) {
         direction: 1.,
         speed: SPEED,
         prev_alien_count: 99,
+        reset_cooldown: 0.,
     });
 }
 
@@ -132,13 +135,15 @@ fn update_aliens(
     //only query aliens that are still alive
     mut alien_query: Query<(Entity, &Alien, &mut Transform, &mut Visibility), Without<Dead>>,
     mut alien_manager: ResMut<AlienManager>,
-    mut events: EventWriter<PlayerKilledEvent>,
+    mut player_killed_events: EventWriter<PlayerKilledEvent>,
+    mut level_completed_events: EventWriter<LevelCompletedEvent>,
     resolution: Res<resolution::Resolution>,
     time: Res<Time>,
 ) {
     let margin = resolution.screen_dimensions.x * 0.5 - (resolution.pixel_ratio * 25.0);
     let mut alien_alive = false;
     let mut alien_count = 0;
+    alien_manager.reset_cooldown -= time.delta_secs();
     for (entity, alien, mut transform, mut visibility) in alien_query.iter_mut() {
         //delta_seconds makes it so our aliens move at the same speed regardless of framerate; delta_seconds() gives the time between each frame.
         transform.translation.x +=
@@ -159,7 +164,7 @@ fn update_aliens(
         //if the aliens have made it out of the bottom of the screen we have lost the game and should reset
         if transform.translation.y < -resolution.screen_dimensions.y * 0.5 + 70. {
             alien_manager.reset = true;
-            events.write(PlayerKilledEvent {});
+            player_killed_events.write(PlayerKilledEvent {});
         }
 
         alien_alive = true;
@@ -168,6 +173,10 @@ fn update_aliens(
 
     if !alien_alive {
         alien_manager.reset = true;
+        if alien_manager.reset_cooldown < 0. {
+            alien_manager.reset_cooldown = 1.0;
+            level_completed_events.write(LevelCompletedEvent {});
+        }
     }
 
     if (alien_count < 30 && alien_manager.prev_alien_count >= 30)
