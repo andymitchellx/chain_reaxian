@@ -25,7 +25,6 @@ pub fn ui_root(name: impl Into<Cow<'static, str>>) -> impl Bundle {
 
 pub const HEADER_TEXT: Color = Color::srgb(0.988, 0.984, 0.800);
 
-/// A simple header label. Bigger than [`label`].
 pub fn header(text: impl Into<String>) -> impl Bundle {
     (
         Name::new("Header"),
