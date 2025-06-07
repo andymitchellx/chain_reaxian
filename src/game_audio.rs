@@ -2,6 +2,7 @@ use bevy::{audio::Volume, prelude::*};
 use bevy_rustysynth::MidiAudio;
 
 use crate::{
+    alien::{ALIEN_SPEED_INCREMENT, INITIAL_ALIEN_SPEED, SpeedChangedEvent},
     alien_projectile::{AlienShootEvent, PlayerKilledEvent},
     capsule::{CapsuleCollisionEvent, CapsuleReleasedEvent},
     player::PlayerShootEvent,
@@ -22,6 +23,7 @@ impl Plugin for GameAudioPlugin {
                     capsule_released,
                     player_killed,
                     player_shoot,
+                    speed_changed,
                     update_cooldowns,
                 ),
             );
@@ -39,9 +41,12 @@ const ALIEN_KILLED_COOLDOWN: f32 = 0.2;
 const CAPSULE_COLLISION_COOLDOWN: f32 = 0.4;
 const CAPSULE_RELEASE_COOLDOWN: f32 = 0.4;
 
+#[derive(Component)]
+struct GameMusic;
+
 fn play_music(mut commands: Commands, asset_server: Res<AssetServer>) {
     let audio = asset_server.load::<MidiAudio>("sounds/background-music.mid");
-    let volume = Volume::Linear(3.0);
+    let volume = Volume::Linear(3.5);
 
     commands.spawn((
         AudioPlayer(audio),
@@ -50,8 +55,8 @@ fn play_music(mut commands: Commands, asset_server: Res<AssetServer>) {
             volume,
             ..default()
         },
+        GameMusic {},
     ));
-
 }
 
 fn setup_cooldown(mut commands: Commands) {
@@ -155,4 +160,24 @@ fn update_cooldowns(mut cooldown_query: Query<&mut AudioCooldowns>, time: Res<Ti
     cooldown.alien_killed_timer -= time.delta_secs();
     cooldown.capsule_collision_timer -= time.delta_secs();
     cooldown.capsule_release_timer -= time.delta_secs();
+}
+
+const SPEED_FACTOR: f32 = 0.02;
+
+fn speed_changed(
+    mut events: EventReader<SpeedChangedEvent>,
+    music_controller: Query<&AudioSink, With<GameMusic>>,
+) {
+    for speed_changed in events.read() {
+        let Ok(sink) = music_controller.single() else {
+            return;
+        };
+
+        let num_speed_increments =
+            (speed_changed.speed - INITIAL_ALIEN_SPEED) / ALIEN_SPEED_INCREMENT;
+
+        let new_speed = 1. + (num_speed_increments * SPEED_FACTOR);
+        sink.set_speed(new_speed);
+        println!("Speed changed: {}", new_speed);
+    }
 }

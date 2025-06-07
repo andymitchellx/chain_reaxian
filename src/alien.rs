@@ -11,7 +11,13 @@ impl Plugin for AlienPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, (setup_aliens, setup_wave))
             .add_systems(Update, (update_aliens, manage_alien_logic, player_killed));
+        app.add_event::<SpeedChangedEvent>();
     }
+}
+
+#[derive(Event)]
+pub struct SpeedChangedEvent {
+    pub speed: f32,
 }
 
 #[derive(Component)]
@@ -51,8 +57,8 @@ pub struct AlienManager {
 //width and height represent the amount of aliens horizontally and vertically which we wish to spawn
 const HORIZ_SPACING: f32 = 22.;
 const VERT_SPACING: f32 = 50.0;
-const SPEED: f32 = 35.0;
-const SPEED_INCREMENT: f32 = 12.0;
+pub const INITIAL_ALIEN_SPEED: f32 = 35.0;
+pub const ALIEN_SPEED_INCREMENT: f32 = 12.0;
 const ALIEN_SHIFT_AMOUNT: f32 = 16.;
 const ZINDEX: f32 = 15.0;
 const VERT_OFFSET: f32 = 70.0;
@@ -64,7 +70,7 @@ fn setup_aliens(mut commands: Commands) {
         dist_from_boundary: 0.,
         shift_aliens_down: false,
         direction: 1.,
-        speed: SPEED,
+        speed: INITIAL_ALIEN_SPEED,
         prev_alien_count: 99,
         reset_cooldown: 0.,
     });
@@ -137,6 +143,7 @@ fn update_aliens(
     mut alien_manager: ResMut<AlienManager>,
     mut player_killed_events: EventWriter<PlayerKilledEvent>,
     mut level_completed_events: EventWriter<LevelCompletedEvent>,
+    mut speed_changed_events: EventWriter<SpeedChangedEvent>,
     resolution: Res<resolution::Resolution>,
     time: Res<Time>,
 ) {
@@ -184,7 +191,10 @@ fn update_aliens(
         || (alien_count < 10 && alien_manager.prev_alien_count >= 10)
         || (alien_count < 3 && alien_manager.prev_alien_count >= 3)
     {
-        alien_manager.speed += SPEED_INCREMENT;
+        alien_manager.speed += ALIEN_SPEED_INCREMENT;
+        speed_changed_events.write(SpeedChangedEvent {
+            speed: alien_manager.speed,
+        });
     }
 
     alien_manager.prev_alien_count = alien_count;
@@ -221,10 +231,14 @@ fn manage_alien_logic(
 
 fn player_killed(
     mut player_killed_events: EventReader<PlayerKilledEvent>,
+    mut speed_changed_events: EventWriter<SpeedChangedEvent>,
     mut alien_manager: ResMut<AlienManager>,
 ) {
     for _ in player_killed_events.read() {
         alien_manager.reset = true;
-        alien_manager.speed = SPEED;
+        alien_manager.speed = INITIAL_ALIEN_SPEED;
+        speed_changed_events.write(SpeedChangedEvent {
+            speed: alien_manager.speed,
+        });
     }
 }
