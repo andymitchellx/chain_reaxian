@@ -1,4 +1,5 @@
-use bevy::prelude::*;
+use bevy::{audio::Volume, prelude::*};
+use bevy_rustysynth::MidiAudio;
 
 use crate::{
     alien_projectile::{AlienShootEvent, PlayerKilledEvent},
@@ -7,22 +8,23 @@ use crate::{
     projectile::AlienKilledEvent,
 };
 
-pub struct AudioPlugin;
+pub struct GameAudioPlugin;
 
-impl Plugin for AudioPlugin {
+impl Plugin for GameAudioPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_cooldown).add_systems(
-            Update,
-            (
-                alien_killed,
-                alien_shoot,
-                capsule_collision,
-                capsule_released,
-                player_killed,
-                player_shoot,
-                update_cooldowns,
-            ),
-        );
+        app.add_systems(Startup, (setup_cooldown, play_music))
+            .add_systems(
+                Update,
+                (
+                    alien_killed,
+                    alien_shoot,
+                    capsule_collision,
+                    capsule_released,
+                    player_killed,
+                    player_shoot,
+                    update_cooldowns,
+                ),
+            );
     }
 }
 
@@ -36,6 +38,21 @@ struct AudioCooldowns {
 const ALIEN_KILLED_COOLDOWN: f32 = 0.2;
 const CAPSULE_COLLISION_COOLDOWN: f32 = 0.4;
 const CAPSULE_RELEASE_COOLDOWN: f32 = 0.4;
+
+fn play_music(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let audio = asset_server.load::<MidiAudio>("sounds/background-music.mid");
+    let volume = Volume::Linear(3.0);
+
+    commands.spawn((
+        AudioPlayer(audio),
+        PlaybackSettings {
+            mode: bevy::audio::PlaybackMode::Loop,
+            volume,
+            ..default()
+        },
+    ));
+
+}
 
 fn setup_cooldown(mut commands: Commands) {
     commands.spawn(AudioCooldowns {
