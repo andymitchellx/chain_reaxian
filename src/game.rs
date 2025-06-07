@@ -4,6 +4,7 @@ use crate::alien;
 use crate::alien_projectile;
 use crate::capsule;
 use crate::fire;
+use crate::game_audio;
 use crate::level_indicator;
 use crate::player;
 use crate::projectile;
@@ -19,6 +20,7 @@ impl Plugin for GamePlugin {
             alien_projectile::AlienProjectilePlugin,
             capsule::CapsulePlugin,
             fire::FirePlugin,
+            game_audio::GameAudioPlugin,
             level_indicator::LevelIndicatorPlugin,
             resolution::ResolutionPlugin,
             player::PlayerPlugin,

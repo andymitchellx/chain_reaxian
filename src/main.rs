@@ -1,5 +1,6 @@
 use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
+use bevy_rustysynth::RustySynthPlugin;
 
 pub mod alien;
 pub mod alien_layouts;
@@ -7,6 +8,7 @@ pub mod alien_projectile;
 pub mod capsule;
 pub mod fire;
 pub mod game;
+pub mod game_audio;
 pub mod level_indicator;
 pub mod player;
 pub mod projectile;
@@ -37,6 +39,7 @@ fn main() {
                 })
                 .set(ImagePlugin::default_nearest()),
             game::GamePlugin,
+            RustySynthPlugin::default(),
         ))
         .run();
 }
