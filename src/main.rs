@@ -4,6 +4,7 @@ use bevy::prelude::*;
 pub mod alien;
 pub mod alien_layouts;
 pub mod alien_projectile;
+pub mod audio;
 pub mod capsule;
 pub mod fire;
 pub mod game;

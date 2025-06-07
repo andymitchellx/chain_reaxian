@@ -14,6 +14,7 @@ impl Plugin for PlayerPlugin {
             Update,
             (update_player, capsule_collision, reset_when_killed),
         );
+        app.add_event::<PlayerShootEvent>();
     }
 }
 
@@ -62,6 +63,9 @@ const SPEED: f32 = 200.;
 const BULLET_SPEED: f32 = 400.;
 const SHOOT_COOLDOWN: f32 = 0.9;
 
+#[derive(Event, Debug)]
+pub struct PlayerShootEvent {}
+
 fn update_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -69,6 +73,7 @@ fn update_player(
     time: Res<Time>,
     keys: Res<ButtonInput<KeyCode>>,
     resolution: Res<resolution::Resolution>,
+    mut events: EventWriter<PlayerShootEvent>,
 ) {
     let (mut player, mut transform) = player_query.single_mut().unwrap();
 
@@ -98,6 +103,7 @@ fn update_player(
     player.shoot_timer -= time.delta_secs();
 
     if keys.pressed(KeyCode::Space) && player.shoot_timer <= 0. {
+        events.write(PlayerShootEvent {});
         player.shoot_timer = SHOOT_COOLDOWN;
         match player.projectile_type {
             ProjectileType::DoubleShot => {

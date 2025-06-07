@@ -20,6 +20,7 @@ impl Plugin for AlienProjectilePlugin {
             ),
         );
         app.add_event::<PlayerKilledEvent>();
+        app.add_event::<AlienShootEvent>();
     }
 }
 
@@ -33,6 +34,9 @@ const BULLET_SPEED: f32 = 240.;
 
 #[derive(Event, Debug)]
 pub struct PlayerKilledEvent {}
+
+#[derive(Event, Debug)]
+pub struct AlienShootEvent {}
 
 #[derive(Component)]
 pub struct AlienProjectile {
@@ -91,6 +95,7 @@ fn fire_projectile(
     alien_query: Query<&mut Transform, (With<Alien>, Without<Dead>)>,
     time: Res<Time>,
     resolution: Res<resolution::Resolution>,
+    mut events: EventWriter<AlienShootEvent>,
 ) {
     let mut cooldown = cooldown_query.single_mut().unwrap();
     let mut rng = rand::thread_rng();
@@ -98,6 +103,7 @@ fn fire_projectile(
 
     if cooldown.shoot_timer <= 0. {
         if let Some(transform) = alien_query.iter().choose(&mut rng) {
+            events.write(AlienShootEvent {});
             cooldown.shoot_timer = SHOOT_COOLDOWN;
             let bullet_texture: Handle<Image> = asset_server.load("images/chain.png");
             commands.spawn((

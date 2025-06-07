@@ -17,6 +17,7 @@ impl Plugin for CapsulePlugin {
             (spawn_capsules, update_capsules, update_capsule_interactions),
         );
         app.add_event::<CapsuleCollisionEvent>();
+        app.add_event::<CapsuleReleasedEvent>();
     }
 }
 
@@ -25,10 +26,14 @@ pub struct Capsule {
     pub speed: f32,
 }
 
+#[derive(Event, Debug)]
+pub struct CapsuleReleasedEvent {}
+
 fn spawn_capsules(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut alien_killed_events: EventReader<AlienKilledEvent>,
+    mut events: EventWriter<CapsuleReleasedEvent>,
     resolution: Res<resolution::Resolution>,
 ) {
     let mut rng = rand::thread_rng();
@@ -36,6 +41,7 @@ fn spawn_capsules(
         let pct = rng.gen_range(0.0..100.0);
         if pct < CAPSULE_PCT {
             let capsule_image = asset_server.load("images/orange_capsule.png");
+            events.write(CapsuleReleasedEvent {});
             commands.spawn((
                 Sprite {
                     image: capsule_image,

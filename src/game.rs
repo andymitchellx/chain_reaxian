@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::alien;
 use crate::alien_projectile;
+use crate::audio;
 use crate::capsule;
 use crate::fire;
 use crate::level_indicator;
@@ -17,6 +18,7 @@ impl Plugin for GamePlugin {
         app.add_plugins((
             alien::AlienPlugin,
             alien_projectile::AlienProjectilePlugin,
+            audio::AudioPlugin,
             capsule::CapsulePlugin,
             fire::FirePlugin,
             level_indicator::LevelIndicatorPlugin,
