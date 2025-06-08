@@ -101,8 +101,20 @@ fn update_player(
     if keys.pressed(KeyCode::Space) && player.shoot_timer <= 0. {
         events.write(PlayerShootEvent {});
         player.shoot_timer = SHOOT_COOLDOWN;
-        spawn_one_missile(&mut commands, &asset_server, &resolution, &transform, player.main_gun_projectiles);
-        spawn_two_missiles(&mut commands, &asset_server, &resolution, &transform, player.side_gun_projectiles);
+        spawn_one_missile(
+            &mut commands,
+            &asset_server,
+            &resolution,
+            &transform,
+            player.main_gun_projectiles,
+        );
+        spawn_two_missiles(
+            &mut commands,
+            &asset_server,
+            &resolution,
+            &transform,
+            player.side_gun_projectiles,
+        );
     }
 }
 
@@ -118,8 +130,7 @@ fn capsule_collision(
         if player.side_gun_projectiles < MAX_SIDE_BULLETS {
             if player.main_gun_projectiles > player.side_gun_projectiles {
                 player.side_gun_projectiles += 1;
-            }
-            else {
+            } else {
                 player.main_gun_projectiles += 1;
             }
         }

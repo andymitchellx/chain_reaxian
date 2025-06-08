@@ -30,9 +30,10 @@ impl Plugin for GamePlugin {
             star_field::StarFieldPlugin,
         ))
         .add_systems(Startup, setup_scene)
-        .add_plugins(EguiPlugin { enable_multipass_for_primary_context: true })
+        .add_plugins(EguiPlugin {
+            enable_multipass_for_primary_context: true,
+        })
         .add_plugins(WorldInspectorPlugin::new());
-
     }
 }
 fn setup_scene(mut commands: Commands) {
