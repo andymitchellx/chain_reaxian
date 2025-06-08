@@ -22,15 +22,10 @@ impl Plugin for PlayerPlugin {
 pub struct Player {
     //provides cooldown for shooting so we don't just shoot a bullet every frame
     pub shoot_timer: f32,
-    pub projectile_type: ProjectileType,
     pub dead: bool,
     pub level: i32,
-}
-
-pub enum ProjectileType {
-    SingleShot,
-    DoubleShot,
-    TripleShot,
+    pub main_gun_projectiles: i32,
+    pub side_gun_projectiles: i32,
 }
 
 fn setup_player(
@@ -52,9 +47,10 @@ fn setup_player(
         .with_scale(Vec3::splat(resolution.pixel_ratio)),
         Player {
             shoot_timer: 0.,
-            projectile_type: ProjectileType::SingleShot,
             dead: false,
             level: 1,
+            main_gun_projectiles: 1,
+            side_gun_projectiles: 0,
         },
     ));
 }
@@ -105,18 +101,24 @@ fn update_player(
     if keys.pressed(KeyCode::Space) && player.shoot_timer <= 0. {
         events.write(PlayerShootEvent {});
         player.shoot_timer = SHOOT_COOLDOWN;
-        match player.projectile_type {
-            ProjectileType::DoubleShot => {
-                spawn_two_missiles(commands, asset_server, resolution, transform)
-            }
-            ProjectileType::TripleShot => {
-                spawn_one_missile(&mut commands, &asset_server, &resolution, &transform);
-                spawn_two_missiles(commands, asset_server, resolution, transform);
-            }
-            _ => spawn_one_missile(&mut commands, &asset_server, &resolution, &transform),
-        }
+        spawn_one_missile(
+            &mut commands,
+            &asset_server,
+            &resolution,
+            &transform,
+            player.main_gun_projectiles,
+        );
+        spawn_two_missiles(
+            &mut commands,
+            &asset_server,
+            &resolution,
+            &transform,
+            player.side_gun_projectiles,
+        );
     }
 }
+
+const MAX_SIDE_BULLETS: i32 = 6;
 
 fn capsule_collision(
     mut capsule_collision_events: EventReader<CapsuleCollisionEvent>,
@@ -125,85 +127,95 @@ fn capsule_collision(
 ) {
     let mut player = player_query.single_mut().unwrap();
     for _ in capsule_collision_events.read() {
-        match player.projectile_type {
-            ProjectileType::DoubleShot => {
-                player.projectile_type = ProjectileType::TripleShot;
-                level_completed_events.write(LevelCompletedEvent {});
+        if player.side_gun_projectiles < MAX_SIDE_BULLETS {
+            if player.main_gun_projectiles > player.side_gun_projectiles {
+                player.side_gun_projectiles += 1;
+            } else {
+                player.main_gun_projectiles += 1;
             }
-            ProjectileType::TripleShot => {
-                level_completed_events.write(LevelCompletedEvent {});
-            }
-            _ => player.projectile_type = ProjectileType::DoubleShot,
         }
+
+        level_completed_events.write(LevelCompletedEvent {});
     }
 }
 
 const PRIMARY_GUN_HEIGHT: f32 = 25.0;
+const BULLET_HEIGHT: f32 = 12.0;
 
 fn spawn_one_missile(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
     resolution: &Res<resolution::Resolution>,
     transform: &Mut<'_, Transform>,
+    num_missiles: i32,
 ) {
     let bullet_texture: Handle<Image> = asset_server.load("images/chain.png");
-    commands.spawn((
-        Sprite {
-            image: bullet_texture,
-            ..Default::default()
-        },
-        Transform::from_xyz(
-            transform.translation.x,
-            transform.translation.y + PRIMARY_GUN_HEIGHT,
-            transform.translation.z,
-        )
-        .with_scale(Vec3::splat(resolution.pixel_ratio)),
-        projectile::Projectile {
-            speed: BULLET_SPEED,
-        },
-    ));
+    let mut y_pos = transform.translation.y + PRIMARY_GUN_HEIGHT;
+
+    for _ in 0..num_missiles {
+        commands.spawn((
+            Sprite {
+                image: bullet_texture.clone(),
+                ..Default::default()
+            },
+            Transform::from_xyz(transform.translation.x, y_pos, transform.translation.z)
+                .with_scale(Vec3::splat(resolution.pixel_ratio)),
+            projectile::Projectile {
+                speed: BULLET_SPEED,
+            },
+        ));
+
+        y_pos -= BULLET_HEIGHT;
+    }
 }
 
 const GUN_WIDTH: f32 = 20.0;
 
 fn spawn_two_missiles(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    resolution: Res<resolution::Resolution>,
-    transform: Mut<'_, Transform>,
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    resolution: &Res<resolution::Resolution>,
+    transform: &Mut<'_, Transform>,
+    num_missiles: i32,
 ) {
     let bullet_texture: Handle<Image> = asset_server.load("images/chain.png");
-    commands.spawn((
-        Sprite {
-            image: bullet_texture.clone(),
-            ..Default::default()
-        },
-        Transform::from_xyz(
-            transform.translation.x - GUN_WIDTH,
-            transform.translation.y,
-            transform.translation.z,
-        )
-        .with_scale(Vec3::splat(resolution.pixel_ratio)),
-        projectile::Projectile {
-            speed: BULLET_SPEED,
-        },
-    ));
+    let mut y_pos = transform.translation.y + PRIMARY_GUN_HEIGHT;
 
-    commands.spawn((
-        Sprite {
-            image: bullet_texture,
-            ..Default::default()
-        },
-        Transform::from_xyz(
-            transform.translation.x + GUN_WIDTH,
-            transform.translation.y,
-            transform.translation.z,
-        )
-        .with_scale(Vec3::splat(resolution.pixel_ratio)),
-        projectile::Projectile {
-            speed: BULLET_SPEED,
-        },
-    ));
+    for _ in 0..num_missiles {
+        commands.spawn((
+            Sprite {
+                image: bullet_texture.clone(),
+                ..Default::default()
+            },
+            Transform::from_xyz(
+                transform.translation.x - GUN_WIDTH,
+                y_pos,
+                transform.translation.z,
+            )
+            .with_scale(Vec3::splat(resolution.pixel_ratio)),
+            projectile::Projectile {
+                speed: BULLET_SPEED,
+            },
+        ));
+
+        commands.spawn((
+            Sprite {
+                image: bullet_texture.clone(),
+                ..Default::default()
+            },
+            Transform::from_xyz(
+                transform.translation.x + GUN_WIDTH,
+                y_pos,
+                transform.translation.z,
+            )
+            .with_scale(Vec3::splat(resolution.pixel_ratio)),
+            projectile::Projectile {
+                speed: BULLET_SPEED,
+            },
+        ));
+
+        y_pos -= BULLET_HEIGHT;
+    }
 }
 
 fn reset_when_killed(
@@ -213,8 +225,9 @@ fn reset_when_killed(
 ) {
     let mut player = player_query.single_mut().unwrap();
     for _ in player_killed_events.read() {
-        player.projectile_type = ProjectileType::SingleShot;
         player.level = 0;
+        player.main_gun_projectiles = 1;
+        player.side_gun_projectiles = 0;
         events.write(LevelCompletedEvent {});
     }
 }

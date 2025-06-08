@@ -37,9 +37,9 @@ struct AudioCooldowns {
     capsule_release_timer: f32,
 }
 
-const ALIEN_KILLED_COOLDOWN: f32 = 0.2;
-const CAPSULE_COLLISION_COOLDOWN: f32 = 0.4;
-const CAPSULE_RELEASE_COOLDOWN: f32 = 0.4;
+const ALIEN_KILLED_COOLDOWN: f32 = 0.3;
+const CAPSULE_COLLISION_COOLDOWN: f32 = 0.8;
+const CAPSULE_RELEASE_COOLDOWN: f32 = 0.8;
 
 #[derive(Component)]
 struct GameMusic;
@@ -178,6 +178,5 @@ fn speed_changed(
 
         let new_speed = 1. + (num_speed_increments * SPEED_FACTOR);
         sink.set_speed(new_speed);
-        println!("Speed changed: {}", new_speed);
     }
 }
