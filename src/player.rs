@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::alien_projectile::PlayerKilledEvent;
 use crate::capsule::CapsuleCollisionEvent;
 use crate::level_indicator::LevelCompletedEvent;
+use crate::level_indicator::ScoreManager;
 use crate::projectile;
 use crate::resolution;
 
@@ -23,7 +24,6 @@ pub struct Player {
     //provides cooldown for shooting so we don't just shoot a bullet every frame
     pub shoot_timer: f32,
     pub dead: bool,
-    pub level: i32,
     pub main_gun_projectiles: i32,
     pub side_gun_projectiles: i32,
 }
@@ -48,7 +48,6 @@ fn setup_player(
         Player {
             shoot_timer: 0.,
             dead: false,
-            level: 1,
             main_gun_projectiles: 1,
             side_gun_projectiles: 0,
         },
@@ -222,10 +221,11 @@ fn reset_when_killed(
     mut player_killed_events: EventReader<PlayerKilledEvent>,
     mut player_query: Query<&mut Player>,
     mut events: EventWriter<LevelCompletedEvent>,
+    mut score_manager: ResMut<ScoreManager>,
 ) {
     let mut player = player_query.single_mut().unwrap();
     for _ in player_killed_events.read() {
-        player.level = 0;
+        score_manager.curr_level = 0;
         player.main_gun_projectiles = 1;
         player.side_gun_projectiles = 0;
         events.write(LevelCompletedEvent {});
