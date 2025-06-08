@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{player, widget};
+use crate::widget;
 
 pub struct LevelIndicatorPlugin;
 
@@ -10,6 +10,15 @@ struct LevelTextParent {}
 #[derive(Component)]
 struct LevelText {
     time_remaining: f32,
+}
+
+#[derive(Component)]
+struct ScoreParent {}
+
+#[derive(Resource)]
+pub struct ScoreManager {
+    pub curr_level: i32,
+    pub max_level: i32,
 }
 
 impl Plugin for LevelIndicatorPlugin {
@@ -25,36 +34,51 @@ pub struct LevelCompletedEvent {}
 
 fn setup_parent_widget(mut commands: Commands) {
     commands.spawn((
-        widget::ui_root("Level Indicator"),
+        widget::ui_center_root("Level Indicator"),
         GlobalZIndex(2),
         LevelTextParent {},
     ));
+
+    commands.spawn((
+        widget::ui_center_root("Score"),
+        GlobalZIndex(2),
+        ScoreParent {},
+    ));
+
+    commands.insert_resource(ScoreManager {
+        curr_level: 1,
+        max_level: 1,
+    });
 }
 
 const TIME_REMAINING: f32 = 1.7;
 
 fn update_level_complete(
     mut commands: Commands,
-    mut player_query: Query<&mut player::Player>,
     parent_query: Query<Entity, With<LevelTextParent>>,
     mut events: EventReader<LevelCompletedEvent>,
+    mut score_manager: ResMut<ScoreManager>,
 ) {
     for _ in events.read() {
-        for mut player in player_query.iter_mut() {
-            for parent in parent_query.iter() {
-                player.level += 1;
-
-                let child = commands
-                    .spawn((
-                        widget::header(format!("Level {}", player.level)),
-                        LevelText {
-                            time_remaining: TIME_REMAINING,
-                        },
-                    ))
-                    .id();
-
-                commands.entity(parent).add_child(child);
+        for parent in parent_query.iter() {
+            score_manager.curr_level += 1;
+            if score_manager.curr_level > score_manager.max_level {
+                score_manager.max_level = score_manager.curr_level;
             }
+
+            let child = commands
+                .spawn((
+                    widget::large_text(format!(
+                        "Level {} (Max: {})",
+                        score_manager.curr_level, score_manager.max_level
+                    )),
+                    LevelText {
+                        time_remaining: TIME_REMAINING,
+                    },
+                ))
+                .id();
+
+            commands.entity(parent).add_child(child);
         }
     }
 }
