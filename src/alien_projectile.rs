@@ -56,7 +56,7 @@ fn update_alien_projectiles(
 ) {
     for (entity, alien_projectile, mut transform) in projectile_query.iter_mut() {
         transform.translation.y -= alien_projectile.speed * time.delta_secs();
-        if transform.translation.y > resolution.screen_dimensions.y * 0.5 {
+        if transform.translation.y < -resolution.screen_dimensions.y * 0.5 {
             commands.entity(entity).despawn();
         }
     }

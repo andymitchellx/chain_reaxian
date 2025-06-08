@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::alien::{self, AlienType, Dead};
+use crate::alien::{Alien, Dead};
 use crate::projectile::AlienKilledEvent;
 use crate::resolution;
 
@@ -11,8 +11,20 @@ const FIRE_LIFESPAN: f32 = 2.;
 
 impl Plugin for FirePlugin {
     fn build(&self, app: &mut App) {
+        app.add_systems(Startup, setup_fire_manager);
         app.add_systems(Update, (spawn_fire, update_fire, update_fire_interactions));
     }
+}
+
+const MAX_FIRES: i32 = 20;
+
+#[derive(Resource)]
+struct FireManager {
+    num_fires: i32,
+}
+
+fn setup_fire_manager(mut commands: Commands) {
+    commands.insert_resource(FireManager { num_fires: 0 });
 }
 
 #[derive(Component)]
@@ -25,9 +37,10 @@ fn spawn_fire(
     asset_server: Res<AssetServer>,
     mut alien_killed_events: EventReader<AlienKilledEvent>,
     resolution: Res<resolution::Resolution>,
+    mut fire_manager: ResMut<FireManager>,
 ) {
     for event in alien_killed_events.read() {
-        if event.alien_type == AlienType::Worker {
+        if fire_manager.num_fires < MAX_FIRES {
             let fire_image = asset_server.load("images/fire.png");
             commands.spawn((
                 Sprite {
@@ -40,6 +53,8 @@ fn spawn_fire(
                     time_remaining: FIRE_LIFESPAN,
                 },
             ));
+
+            fire_manager.num_fires += 1;
         }
     }
 }
@@ -48,18 +63,20 @@ fn update_fire(
     mut commands: Commands,
     mut fire_query: Query<(Entity, &mut Fire)>,
     time: Res<Time>,
+    mut fire_manager: ResMut<FireManager>,
 ) {
     for (entity, mut fire) in fire_query.iter_mut() {
         fire.time_remaining -= time.delta_secs();
 
         if fire.time_remaining < 0. {
             commands.entity(entity).despawn();
+            fire_manager.num_fires -= 1;
         }
     }
 }
 
 fn update_fire_interactions(
-    mut alien_query: Query<(&mut alien::Alien, &Transform), Without<Dead>>,
+    mut alien_query: Query<(&mut Alien, &Transform), Without<Dead>>,
     mut fire_query: Query<&Transform, With<Fire>>,
     mut events: EventWriter<AlienKilledEvent>,
 ) {
