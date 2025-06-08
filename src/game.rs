@@ -1,6 +1,4 @@
 use bevy::prelude::*;
-use bevy_inspector_egui::bevy_egui::EguiPlugin;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use crate::alien;
 use crate::alien_projectile;
@@ -29,13 +27,10 @@ impl Plugin for GamePlugin {
             projectile::ProjectilePlugin,
             star_field::StarFieldPlugin,
         ))
-        .add_systems(Startup, setup_scene)
-        .add_plugins(EguiPlugin {
-            enable_multipass_for_primary_context: true,
-        })
-        .add_plugins(WorldInspectorPlugin::new());
+        .add_systems(Startup, setup_scene);
     }
 }
+
 fn setup_scene(mut commands: Commands) {
     commands.spawn(Camera2d);
 }

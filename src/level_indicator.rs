@@ -31,6 +31,8 @@ fn setup_parent_widget(mut commands: Commands) {
     ));
 }
 
+const TIME_REMAINING: f32 = 1.7;
+
 fn update_level_complete(
     mut commands: Commands,
     mut player_query: Query<&mut player::Player>,
@@ -46,7 +48,7 @@ fn update_level_complete(
                     .spawn((
                         widget::header(format!("Level {}", player.level)),
                         LevelText {
-                            time_remaining: 2.5,
+                            time_remaining: TIME_REMAINING,
                         },
                     ))
                     .id();

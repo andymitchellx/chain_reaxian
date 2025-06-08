@@ -76,8 +76,9 @@ fn alien_killed(
     let mut cooldown = cooldown_query.single_mut().unwrap();
     if cooldown.alien_killed_timer <= 0. {
         for _ in alien_killed_events.read() {
-            commands.spawn(AudioPlayer::new(
-                asset_server.load("sounds/alienKilled.ogg"),
+            commands.spawn((
+                AudioPlayer::new(asset_server.load("sounds/alienKilled.ogg")),
+                PlaybackSettings::DESPAWN,
             ));
 
             cooldown.alien_killed_timer = ALIEN_KILLED_COOLDOWN;
@@ -94,8 +95,9 @@ fn capsule_collision(
     let mut cooldown = cooldown_query.single_mut().unwrap();
     if cooldown.capsule_collision_timer <= 0. {
         for _ in alien_killed_events.read() {
-            commands.spawn(AudioPlayer::new(
-                asset_server.load("sounds/capsuleCollision.ogg"),
+            commands.spawn((
+                AudioPlayer::new(asset_server.load("sounds/capsuleCollision.ogg")),
+                PlaybackSettings::DESPAWN,
             ));
 
             cooldown.capsule_collision_timer = CAPSULE_COLLISION_COOLDOWN;
@@ -112,8 +114,9 @@ fn capsule_released(
     let mut cooldown = cooldown_query.single_mut().unwrap();
     if cooldown.capsule_collision_timer <= 0. {
         for _ in alien_killed_events.read() {
-            commands.spawn(AudioPlayer::new(
-                asset_server.load("sounds/capsuleRelease.ogg"),
+            commands.spawn((
+                AudioPlayer::new(asset_server.load("sounds/capsuleRelease.ogg")),
+                PlaybackSettings::DESPAWN,
             ));
 
             cooldown.capsule_release_timer = CAPSULE_RELEASE_COOLDOWN;
@@ -127,8 +130,9 @@ fn player_killed(
     mut player_killed_events: EventReader<PlayerKilledEvent>,
 ) {
     for _ in player_killed_events.read() {
-        commands.spawn(AudioPlayer::new(
-            asset_server.load("sounds/playerKilled.ogg"),
+        commands.spawn((
+            AudioPlayer::new(asset_server.load("sounds/playerKilled.ogg")),
+            PlaybackSettings::DESPAWN,
         ));
     }
 }
@@ -139,8 +143,9 @@ fn player_shoot(
     mut player_shoot_events: EventReader<PlayerShootEvent>,
 ) {
     for _ in player_shoot_events.read() {
-        commands.spawn(AudioPlayer::new(
-            asset_server.load("sounds/playerShoot.ogg"),
+        commands.spawn((
+            AudioPlayer::new(asset_server.load("sounds/playerShoot.ogg")),
+            PlaybackSettings::DESPAWN,
         ));
     }
 }
@@ -151,7 +156,10 @@ fn alien_shoot(
     mut alien_shoot_events: EventReader<AlienShootEvent>,
 ) {
     for _ in alien_shoot_events.read() {
-        commands.spawn(AudioPlayer::new(asset_server.load("sounds/alienShoot.ogg")));
+        commands.spawn((
+            AudioPlayer::new(asset_server.load("sounds/alienShoot.ogg")),
+            PlaybackSettings::DESPAWN,
+        ));
     }
 }
 
@@ -163,6 +171,7 @@ fn update_cooldowns(mut cooldown_query: Query<&mut AudioCooldowns>, time: Res<Ti
 }
 
 const SPEED_FACTOR: f32 = 0.02;
+const MAX_SPEED: f32 = 2.0;
 
 fn speed_changed(
     mut events: EventReader<SpeedChangedEvent>,
@@ -177,6 +186,8 @@ fn speed_changed(
             (speed_changed.speed - INITIAL_ALIEN_SPEED) / ALIEN_SPEED_INCREMENT;
 
         let new_speed = 1. + (num_speed_increments * SPEED_FACTOR);
-        sink.set_speed(new_speed);
+        if new_speed < MAX_SPEED {
+            sink.set_speed(new_speed);
+        }
     }
 }
